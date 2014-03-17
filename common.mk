@@ -74,7 +74,10 @@ PRODUCT_PACKAGES := \
     libaudioutils \
     libtinyalsa \
     SamsungServiceMode \
-    Torch
+    Torch \
+    libblt_hw \
+    libasound \
+    libomxil-bellagio
 
 # Charger
 PRODUCT_PACKAGES += \
