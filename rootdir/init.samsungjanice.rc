@@ -498,19 +498,9 @@ service modem /system/bin/sh /system/etc/ste_modem.sh
     class modem-u8500
     user root
 
-# Modem-supervisor
-service modem-supervisor /system/bin/modem-supervisor -f /dev/dbx500_mloader_fw -i /sys/devices/platform/ab8500-i2c.0/chip_id -c monitor
-    class modem-u8500
-    user root
-
 # Creating Modem Security daemon
 service copsd /system/bin/copsdaemon
     class modem-core
-    user root
-
-# Modem_log_relay
-service modem_log_relay /system/bin/modem_log_relay --ctrl_port=2001 --data_port=2002 --inv_port=2003 --report_port=2005
-    class modem
     user root
 
 service admsrv /system/bin/admsrv
@@ -519,10 +509,6 @@ service admsrv /system/bin/admsrv
     group system audio inet net_bt net_bt_admin net_raw shell log
     ioprio rt 4
     capability NET_ADMIN NET_RAW SYS_NICE
-
-service stedump /system/bin/stedump
-    class main
-    user root
 
 service geomagneticd /system/bin/geomagneticd6x
     user compass
