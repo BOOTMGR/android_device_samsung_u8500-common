@@ -62,6 +62,21 @@ on post-fs
 
     chown radio radio /modemfs
     chmod 0771 /modemfs
+    chown radio radio /modemfs/APPL
+    mkdir /modemfs/APPL
+    chmod 0755 /modemfs/APPL
+    mkdir /modemfs/BOOT
+    chown radio radio /modemfs/BOOT
+    chmod 0755 /modemfs/BOOT
+    mkdir /modemfs/DO
+    chown radio radio /modemfs/DO
+    chmod 0755 /modemfs/DO
+    mkdir /modemfs/LOG
+    chown radio radio /modemfs/LOG
+    chmod 0755 /modemfs/LOG
+    mkdir /modemfs/TMP
+    chown radio radio /modemfs/TMP
+    chmod 0755 /modemfs/TMP
     chown radio radio /modemfs/CONF
     chmod 0755 /modemfs/CONF
     chown radio radio /modemfs/CONF/MCE
@@ -85,6 +100,7 @@ on post-fs
     chmod 0770 /efs/imei
     chown radio system /efs/bluetooth
     chown system system /efs/wifi
+    mkdir /data/mediaserver 0775 media media
 
     # Samsung Device permissions
     chown root system /dev/mmc328x
@@ -268,7 +284,7 @@ on post-fs-data
     chown root radio /data/misc/ril_config
 
     # Create directory for STE OMX debug logs
-    mkdir /data/ste-debug 0775 system system
+    mkdir /data/ste-debug 0777 system system
 
     # give system access to sterc_script when enabling usb nap
     copy -u /system/etc/psdata/sterc_conf /data/misc/psdata/sterc_conf
@@ -434,9 +450,37 @@ on boot
     chown system system /sys/module/fbearlysuspend/parameters/fbdelay_ms
     chown system system /sys/module/fbearlysuspend/parameters/fbdelay_first
     chown system system /sys/module/fbearlysuspend/parameters/fbdelay_first_ms
+
+	# system permissions for device parts
+    chown system system /sys/module/mali/parameters/mali_l2_max_reads
+    chown system system /sys/module/mali/parameters/pre_allocated_memory_size_max
     
     # deepest sleep state fix for device parts
     chown system system /d/cpuidle/deepest_state
+    chown system system /sys/kernel/abb-regu/VOTG
+    chown system system /sys/kernel/abb-charger/max_ac_c
+    chown system system /sys/kernel/abb-charger/max_usb_c
+    chown system system /sys/kernel/fsync/mode
+    chown system system /sys/kernel/mxt224e/sweep2wake
+    chown system system /sys/module/mmc_core/parameters/use_spi_crc
+    chown system system /sys/kernel/mxt224e/threshold_t48
+    write /sys/kernel/mxt224e/threshold_t48 on
+    
+
+ # Define TCP buffer sizes for various networks
+ #   ReadMin, ReadInitial, ReadMax, WriteMin, WriteInitial, WriteMax,
+ 
+    setprop net.tcp.buffersize.default 4096,87380,704512,4096,16384,110208
+    setprop net.tcp.buffersize.lte     4096,87380,1220608,4096,16384,563200
+    setprop net.tcp.buffersize.umts    4096,87380,563200,4096,16384,110208
+    setprop net.tcp.buffersize.hspa    4096,87380,704512,4096,16384,110208
+    setprop net.tcp.buffersize.hsupa   4096,87380,704512,4096,16384,262144
+    setprop net.tcp.buffersize.hsdpa   4096,87380,704512,4096,16384,262144
+    setprop net.tcp.buffersize.hspap   4096,87380,1220608,4096,16384,393216
+    setprop net.tcp.buffersize.edge    4096,26280,35040,4096,16384,35040
+    setprop net.tcp.buffersize.gprs    4096,8760,11680,4096,8760,11680
+    setprop net.tcp.buffersize.evdo    4096,87380,563200,4096,16384,262144
+    setprop net.tcp.buffersize.evdo_b  4096,87380,704512,4096,16384,262144
 
     # camera debug
     setprop persist.debug.extcamera.level 777
@@ -546,6 +590,13 @@ service immvibed /system/bin/immvibed
     group shell
     oneshot
 
+service mtpd /system/bin/mtpd
+    socket mtpd stream 600 system system
+    user vpn
+    group vpn net_admin net_raw
+    disabled
+    oneshot
+
 on property:ro.dumpstate.dmesg=1
     write /proc/sys/kernel/dmesg_restrict 0
 
@@ -581,6 +632,10 @@ service dhcpcd_bnep0 /system/bin/dhcpcd -ABKL
     disabled
     oneshot
 
+on property:ro.data.large_tcp_window_size=true
+    # We enable receiving of high-speed conections via ipv4
+    write /proc/sys/net/ipv4/tcp_adv_win_scale  1
+
 service iprenew_wlan0 /system/bin/dhcpcd -n
     class main
     disabled
@@ -595,6 +650,13 @@ service iprenew_bnep0 /system/bin/dhcpcd -n
     class main
     disabled
     oneshot
+
+service bugreport /system/bin/dumpstate -d -v -o /sdcard/bugreports/bugreport
+    class main
+    disabled
+    oneshot
+    keycodes 114 115 116
+
 
 #for WiFi MFG(TestMode)
 service mfgloader /system/bin/mfgloader
