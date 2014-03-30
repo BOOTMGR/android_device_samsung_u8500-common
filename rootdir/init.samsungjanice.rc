@@ -516,7 +516,7 @@ service geomagneticd /system/bin/geomagneticd6x
 
 service orientationd /system/bin/orientationd6x
     user compass
-    group system input group system input
+    group system input
 
 # AT daemon
 service atd /system/bin/at_core -mode normal -serial ttyAMA2
