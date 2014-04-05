@@ -30,6 +30,7 @@ static pthread_mutex_t locker = PTHREAD_MUTEX_INITIALIZER;
 
 const char* const PANEL_BACKLIGHT = "/sys/class/backlight/panel/brightness";
 const char* const LED_BACKLIGHT = "/sys/class/leds/button-backlight/brightness";
+const char* const BLN_ENTRY = "/sys/class/misc/backlightnotification/notification_led";
 
 static int set_backlight(struct light_device_t* dev, struct light_state_t const* state)
 {
@@ -45,9 +46,21 @@ static int set_leds(struct light_device_t* dev, struct light_state_t const* stat
 	int ret;
 	pthread_mutex_lock(&locker);
 	if(convert_to_binary(state) == 1)
-		ret = write_int_to_sysfs(LED_BACKLIGHT, 0);
-	else
 		ret = write_int_to_sysfs(LED_BACKLIGHT, 1);
+	else
+		ret = write_int_to_sysfs(LED_BACKLIGHT, 0);
+	pthread_mutex_unlock(&locker);
+	return ret;
+}
+
+static int set_leds_for_bln(struct light_device_t* dev, struct light_state_t const* state)
+{
+	int ret;
+	pthread_mutex_lock(&locker);
+	if(convert_to_binary(state) == 1)
+		ret = write_int_to_sysfs(BLN_ENTRY, 1);
+	else
+		ret = write_int_to_sysfs(BLN_ENTRY, 0);
 	pthread_mutex_unlock(&locker);
 	return ret;
 }
@@ -69,6 +82,8 @@ static int open_lights(const struct hw_module_t *module, const char *id, struct 
 		set_light = set_backlight;
 	else if(strcmp(LIGHT_ID_BUTTONS, id) == 0)
 		set_light = set_leds;
+	else if(strcmp(LIGHT_ID_NOTIFICATIONS, id) == 0)
+		set_light = set_leds_for_bln;
 	else
 		return -EINVAL;
 
