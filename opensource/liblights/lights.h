@@ -68,6 +68,8 @@ static int convert_to_mono(struct light_state_t const *state)
  */
 static int convert_to_binary(struct light_state_t const *state)
 {
-	return state->color & 0x00ffffff;
+	int tmp = state->color & 0x00ffffff;
+	// 1315860 = 0x141414 --> Minimum brightness avaliable
+	return tmp == 1315860 ? 0 : 1;
 }
 
