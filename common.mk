@@ -76,7 +76,8 @@ PRODUCT_PACKAGES := \
     Torch \
     libblt_hw \
     libasound \
-    libomxil-bellagio
+    libomxil-bellagio \
+    lights.montblanc
 
 # Charger
 PRODUCT_PACKAGES += \
